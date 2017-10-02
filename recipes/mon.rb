@@ -175,7 +175,7 @@ end
 
 if node['ceph']['version'] != 'hammer'
     # Include our overridden systemd file to handle starting the service during bootstrap
-    cookbook_file '/etc/systemd/system/ceph-mon@.service' do
+    template '/etc/systemd/system/ceph-mon@.service' do
       notifies :run, 'execute[ceph-systemctl-daemon-reload]', :immediately
       action :create
       only_if { rhel? && systemd? }
