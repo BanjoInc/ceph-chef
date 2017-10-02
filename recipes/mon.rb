@@ -157,7 +157,7 @@ execute 'make sure monitor key is in mon data' do
 end
 
 execute 'ceph-mon mkfs' do
-  command lazy { "ceph-mon --mkfs -i #{node['hostname']} --fsid #{node['ceph']['fsid-secret']} --keyring #{keyring}" }
+  command lazy { "ceph-mon --mkfs -i #{node['hostname']} --fsid #{node['ceph']['fsid-secret']} --keyring #{keyring} --cluster #{node['ceph']['cluster']}" }
   creates "/var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
   user node['ceph']['owner']
   group node['ceph']['group']
