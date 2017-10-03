@@ -42,7 +42,7 @@ keyring = "/etc/ceph/#{node['ceph']['cluster']}.client.restapi.keyring"
 # to the correct area (where ever the ceph.conf settings are pointing to on the given node). You can keep things
 # simple by keeping the same ceph.conf the same (except for hostname info) for each restapi node.
 execute 'write ceph-restapi-secret' do
-  command lazy { "ceph-authtool #{keyring} --create-keyring --name=client.restapi --add-key='#{node['ceph']['restapi-secret']}'" }
+  command lazy { "ceph-authtool #{keyring} --create-keyring --name=client.restapi --add-key='#{node['ceph']['restapi-secret']}' --cluster #{node['ceph']['cluster']}" }
   only_if { ceph_chef_restapi_secret }
   not_if "test -s #{keyring}"
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
@@ -50,7 +50,7 @@ end
 
 # command lazy { "ceph-authtool --create-keyring #{keyring} -n client.restapi.#{node['hostname']} --gen-key --cap osd 'allow *' --cap mon 'allow *'" }
 execute 'gen client-restapi-secret' do
-  command lazy { "ceph auth get-or-create client.restapi osd 'allow *' mon 'allow *' -o #{keyring}" }
+  command lazy { "ceph auth get-or-create client.restapi osd 'allow *' mon 'allow *' -o #{keyring} --cluster #{node['ceph']['cluster']}" }
   creates keyring
   not_if { ceph_chef_restapi_secret }
   not_if "test -s #{keyring}"
@@ -62,7 +62,7 @@ end
 # Chef Server for this given node
 ruby_block 'save restapi_secret' do
   block do
-    fetch = Mixlib::ShellOut.new("ceph-authtool /etc/ceph/#{node['ceph']['cluster']}.client.restapi.keyring --print-key")
+    fetch = Mixlib::ShellOut.new("ceph-authtool /etc/ceph/#{node['ceph']['cluster']}.client.restapi.keyring --print-key --cluster #{node['ceph']['cluster']}")
     fetch.run_command
     key = fetch.stdout
     # ceph_chef_set_item('restapi-secret', key.delete!("\n"))
