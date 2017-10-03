@@ -95,6 +95,12 @@ if node['ceph']['version'] == 'hammer'
   end
 end
 
+template '/usr/lib/systemd/system/ceph-osd@.service' do
+  notifies :run, 'execute[ceph-systemctl-daemon-reload]', :immediately
+  mode 0644
+  only_if { rhel? && systemd? }
+end
+
 include_recipe 'ceph-chef::bootstrap_osd_key'
 
 # Calling ceph-disk prepare is sufficient for deploying an OSD
