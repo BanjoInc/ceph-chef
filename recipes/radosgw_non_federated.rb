@@ -90,7 +90,7 @@ execute 'update-client-radosgw' do
   command <<-EOH
     ceph -k #{base_key} auth add client.radosgw.gateway -i /etc/ceph/#{node['ceph']['cluster']}.client.radosgw.keyring --cluster #{node['ceph']['cluster']}
   EOH
-  not_if 'ceph auth list | grep client.radosgw.gateway'
+  not_if "ceph auth list --cluster #{node['ceph']['cluster']} | grep client.radosgw.gateway"
   notifies :create, 'ruby_block[save-radosgw-secret]', :immediately
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
 end
