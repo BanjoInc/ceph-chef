@@ -61,5 +61,6 @@ ruby_block 'save_bootstrap_osd' do
     key = fetch.stdout
     ceph_chef_save_bootstrap_osd_secret(key.delete!("\n"))
   end
-  action :nothing
+  only_if { ceph_chef_bootstrap_osd_secret }
+  not_if "test -s /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring"
 end

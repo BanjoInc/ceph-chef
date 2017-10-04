@@ -34,7 +34,6 @@ directory "/var/lib/ceph/restapi/#{node['ceph']['cluster']}-restapi" do
 end
 # end
 
-base_key = "/etc/ceph/#{node['ceph']['cluster']}.client.admin.keyring"
 keyring = "/etc/ceph/#{node['ceph']['cluster']}.client.restapi.keyring"
 
 # NOTE: If the restapi keyring exists and you are using the same key on for different nodes (load balancing) then
@@ -65,11 +64,10 @@ ruby_block 'save restapi_secret' do
     fetch = Mixlib::ShellOut.new("ceph-authtool /etc/ceph/#{node['ceph']['cluster']}.client.restapi.keyring --print-key --cluster #{node['ceph']['cluster']}")
     fetch.run_command
     key = fetch.stdout
-    # ceph_chef_set_item('restapi-secret', key.delete!("\n"))
     node.normal['ceph']['restapi-secret'] = key.delete!("\n")
-    # node.save
   end
-  action :nothing
+  only_if { ceph_chef_restapi_secret }
+  not_if "test -s #{keyring}"
 end
 
 # This is only here as part of completeness.
