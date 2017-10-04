@@ -135,10 +135,9 @@ ruby_block 'save ceph_chef_mon_secret' do
     fetch.run_command
     key = fetch.stdout
     node.normal['ceph']['monitor-secret'] = key.delete!("\n")
-    # node.set['ceph']['monitor-secret'] = key.delete!("\n")
-    # node.save
   end
-  action :nothing
+  not_if { ceph_chef_mon_secret }
+  only_if "test -s #{keyring}"
 end
 
 # For now, make all mon nodes admin nodes
