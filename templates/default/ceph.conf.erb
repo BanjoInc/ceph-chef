@@ -64,6 +64,8 @@
   # Need xattr use omap = true for RGW
   osd map dedup = true
   osd max write size = 256
+  osd max object name len = 256
+  osd max object namespace len = 64
   osd disk threads = 1
   osd client message size cap = 1073741824
   filestore xattr use omap = true
