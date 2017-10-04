@@ -44,10 +44,9 @@ ruby_block 'save ceph_chef_admin_secret' do
     key = fetch.stdout
     puts key
     node.normal['ceph']['admin-secret'] = key.delete!("\n")
-    # node.set['ceph']['admin-secret'] = key.delete!("\n")
-    # node.save
   end
-  action :nothing
+  not_if { ceph_chef_admin_secret }
+  only_if "test -s #{keyring}"
 end
 
 # Verifies or sets the correct mode only
