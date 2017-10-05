@@ -98,12 +98,13 @@ end
 # Saves the key to the current node attribute
 ruby_block 'save-radosgw-secret' do
   block do
-    fetch = Mixlib::ShellOut.new("ceph-authtool #{keyring} --print-key")
+    fetch = Mixlib::ShellOut.new("ceph-authtool #{keyring} --print-key --name=client.radosgw.gateway")
     fetch.run_command
     key = fetch.stdout
     ceph_chef_save_radosgw_secret(key.delete!("\n"))
   end
-  action :nothing
+  not_if { ceph_chef_radosgw_secret }
+  only_if "test -s #{keyring}"
 end
 
 # This is only here as part of completeness. The service_type is not really needed because of defaults.

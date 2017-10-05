@@ -61,7 +61,7 @@ end
 # Chef Server for this given node
 ruby_block 'save restapi_secret' do
   block do
-    fetch = Mixlib::ShellOut.new("ceph-authtool /etc/ceph/#{node['ceph']['cluster']}.client.restapi.keyring --print-key --cluster #{node['ceph']['cluster']}")
+    fetch = Mixlib::ShellOut.new("ceph-authtool /etc/ceph/#{node['ceph']['cluster']}.client.restapi.keyring --print-key --name client.restapi")
     fetch.run_command
     key = fetch.stdout
     node.normal['ceph']['restapi-secret'] = key.delete!("\n")
