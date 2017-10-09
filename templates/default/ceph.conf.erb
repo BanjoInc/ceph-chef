@@ -92,11 +92,15 @@
   journal block align = true
   journal dio = true
   journal aio = true
-  osd mkfs type = xfs
+  osd mkfs type = <%= node['ceph']['osd']['mkfs']['type'] %>
+  # Example: osd mount options xfs = noexec,nodev,noatime,nodiratime,barrier=0,discard
   #osd mount options xfs = rw,noexec,nodev,noatime,nodiratime,nobarrier
   osd mount options xfs = rw,noatime,inode64,logbufs=8,logbsize=256k,allocsize=4M
   # Example: osd mkfs options xfs = -f -i size=2048
-  # Example: osd mount options xfs = noexec,nodev,noatime,nodiratime,barrier=0,discard
+  <% if node['ceph']['osd']['mkfs']['options']['xfs'] %>
+  osd mkfs options xfs = <%= node['ceph']['osd']['mkfs']['options']['xfs'] %>
+  <% end %>
+
   # IMPORTANT: If you modify the crush map with the automation then uncomment the line below (osd crush update ...)
   # otherwise the crush map will not get created correctly and the PGs will stay in inactive/unclean state.
   # In a production system it's good to set this value to 'false' and modify the crush map to fit your environment.
