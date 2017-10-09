@@ -63,9 +63,15 @@
   # Set the default values here if no values provided to override them
   # Need xattr use omap = true for RGW
   osd map dedup = true
+  <% if node['ceph']['osd']['max']['write']['size'] > 0 %>
   osd max write size = <%= node['ceph']['osd']['max']['write']['size'] %>
+  <% end %>
+  <% if node['ceph']['osd']['max']['object']['name']['len'] > 0 %>
   osd max object name len = <%= node['ceph']['osd']['max']['object']['name']['len'] %>
+  <% end %>
+  <% if node['ceph']['osd']['max']['object']['namespace']['len'] > 0 %>
   osd max object namespace len = <%= node['ceph']['osd']['max']['object']['namespace']['len'] %>
+  <% end %>
   osd disk threads = 1
   osd client message size cap = 1073741824
   filestore xattr use omap = true
