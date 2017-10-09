@@ -23,21 +23,23 @@ include_recipe 'ceph-chef::mds_install'
 # cluster = 'ceph'
 cluster = node['ceph']['cluster']
 
-if node['ceph']['version'] == 'hammer'
-  directory "/var/lib/ceph/mds/#{cluster}-#{node['hostname']}" do
-    owner node['ceph']['owner']
-    group node['ceph']['group']
-    mode node['ceph']['mode']
-    recursive true
-    action :create
-    not_if "test -d /var/lib/ceph/mds/#{cluster}-#{node['hostname']}"
-  end
+directory "/var/lib/ceph/mds/#{cluster}-#{node['hostname']}" do
+  owner node['ceph']['owner']
+  group node['ceph']['group']
+  mode node['ceph']['mode']
+  recursive true
+  action :create
 end
 
-ceph_client 'mds' do
-  caps('osd' => 'allow *', 'mon' => 'allow rwx')
-  keyname "mds.#{node['hostname']}"
-  filename "/var/lib/ceph/mds/#{cluster}-#{node['hostname']}/keyring"
+keyring = "/var/lib/ceph/mds/#{cluster}-#{node['hostname']}/keyring"
+# If no initial key exists then this will run
+execute 'generate-client-mds' do
+  command <<-EOH
+      sudo ceph auth get-or-create mds.#{node['hostname']} osd 'allow *' mon 'allow rwx' -o #{keyring} --cluster #{node['ceph']['cluster']}
+  EOH
+  creates keyring
+  not_if "test -s #{keyring}"
+  sensitive true if Chef::Resource::Execute.method_defined? :sensitive
 end
 
 file "/var/lib/ceph/mds/#{cluster}-#{node['hostname']}/done" do
@@ -58,6 +60,12 @@ file "/var/lib/ceph/mds/#{cluster}-#{node['hostname']}/#{filename}" do
   owner node['ceph']['owner']
   group node['ceph']['group']
   mode 00644
+end
+
+template '/etc/systemd/system/ceph-mds@.service' do
+  notifies :run, 'execute[ceph-systemctl-daemon-reload]', :immediately
+  action :create
+  only_if { rhel? && systemd? }
 end
 
 service 'ceph_mds' do
