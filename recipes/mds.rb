@@ -74,7 +74,7 @@ service 'ceph_mds' do
     service_name 'ceph-mds-all-starter'
     provider Chef::Provider::Service::Upstart
   else
-    service_name 'ceph'
+    service_name "ceph-mds@#{node['hostname']}"
   end
   action [:enable, :start]
   supports :restart => true
