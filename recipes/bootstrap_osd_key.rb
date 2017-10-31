@@ -18,7 +18,7 @@
 # Create a new bootstrap-osd secret key if it does not exist either on disk as node attribtues
 bash 'create-bootstrap-osd-key' do
   code <<-EOH
-    BOOTSTRAP_KEY=$(ceph --name mon. --keyring /etc/ceph/#{node['ceph']['cluster']}.mon.keyring auth get-or-create-key client.bootstrap-osd mon 'allow profile bootstrap-osd')
+    BOOTSTRAP_KEY=$(ceph --name mon. --keyring /etc/ceph/#{node['ceph']['cluster']}.mon.keyring auth get-or-create-key client.bootstrap-osd mon 'allow profile bootstrap-osd' --cluster #{node['ceph']['cluster']})
     ceph-authtool "/var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring" \
         --create-keyring \
         --name=client.bootstrap-osd \
