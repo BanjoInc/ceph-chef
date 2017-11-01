@@ -47,7 +47,7 @@ new_key = nil
 # Make sure the key is saved if part of ceph auth list
 ruby_block 'check-radosgw-secret' do
   block do
-    fetch = Mixlib::ShellOut.new('ceph auth get-key client.radosgw.gateway 2>/dev/null')
+    fetch = Mixlib::ShellOut.new("ceph auth get-key client.radosgw.gateway --cluster #{node['ceph']['cluster']} 2>/dev/null")
     fetch.run_command
     key = fetch.stdout
     new_key = ceph_chef_save_radosgw_secret(key) unless key.to_s.strip.empty?

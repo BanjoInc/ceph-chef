@@ -60,7 +60,7 @@ if node['ceph']['pools']['radosgw']['federated_enable']
     new_key = ''
     ruby_block "check-radosgw-secret-#{inst['name']}" do
       block do
-        fetch = Mixlib::ShellOut.new("sudo ceph auth get-key client.radosgw.#{inst['region']}-#{inst['name']} 2>/dev/null")
+        fetch = Mixlib::ShellOut.new("sudo ceph auth get-key client.radosgw.#{inst['region']}-#{inst['name']} --cluster #{node['ceph']['cluster']} 2>/dev/null")
         fetch.run_command
         key = fetch.stdout
         unless key.to_s.strip.empty?
