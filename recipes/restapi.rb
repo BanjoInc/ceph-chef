@@ -41,7 +41,7 @@ keyring = "/etc/ceph/#{node['ceph']['cluster']}.client.restapi.keyring"
 # to the correct area (where ever the ceph.conf settings are pointing to on the given node). You can keep things
 # simple by keeping the same ceph.conf the same (except for hostname info) for each restapi node.
 execute 'write ceph-restapi-secret' do
-  command lazy { "ceph-authtool #{keyring} --create-keyring --name=client.restapi --add-key='#{node['ceph']['restapi-secret']}' --cluster #{node['ceph']['cluster']}" }
+  command lazy { "ceph-authtool #{keyring} --create-keyring --name=client.restapi --add-key='#{ceph_chef_restapi_secret}' --cluster #{node['ceph']['cluster']}" }
   only_if { ceph_chef_restapi_secret }
   not_if "test -s #{keyring}"
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive

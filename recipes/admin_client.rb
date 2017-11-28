@@ -21,7 +21,7 @@ keyring = "/etc/ceph/#{node['ceph']['cluster']}.client.admin.keyring"
 
 # This will execute on other nodes besides the first mon node.
 execute 'format ceph-admin-secret as keyring' do
-  command lazy { "ceph-authtool --create-keyring #{keyring} --name=client.admin --add-key='#{node['ceph']['admin-secret']}' --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow *' --cap mgr 'allow *'" }
+  command lazy { "ceph-authtool --create-keyring #{keyring} --name=client.admin --add-key='#{ceph_chef_admin_secret}' --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow *' --cap mgr 'allow *'" }
   creates keyring
   only_if { ceph_chef_admin_secret }
   not_if "test -s #{keyring}"

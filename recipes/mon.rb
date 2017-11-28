@@ -106,7 +106,7 @@ keyring = "#{node['ceph']['mon']['keyring_path']}/#{node['ceph']['cluster']}.mon
 
 # This will execute on other nodes besides the first mon node.
 execute 'format ceph-mon-secret as keyring' do
-  command lazy { "ceph-authtool --create-keyring #{keyring} --name=mon. --add-key=#{node['ceph']['monitor-secret']} --cap mon 'allow *'" }
+  command lazy { "ceph-authtool --create-keyring #{keyring} --name=mon. --add-key=#{ceph_chef_mon_secret} --cap mon 'allow *'" }
   creates keyring
   user node['ceph']['owner']
   group node['ceph']['group']
