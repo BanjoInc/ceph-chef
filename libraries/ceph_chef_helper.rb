@@ -574,6 +574,8 @@ end
 # update the node data. Of course, another way would be to create node data specific to a given role such as mon, osd ...
 def ceph_chef_find_node_ip_in_network(networks, nodeish = nil)
   require 'netaddr'
+  return [] unless defined? NetAddr
+  return [] unless defined? NetAddr::CIDR
   nodeish = node unless nodeish
   networks.each do |network|
     network.split(/\s*,\s*/).each do |n|

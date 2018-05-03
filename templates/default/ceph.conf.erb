@@ -8,7 +8,7 @@
   # This value must be set before the mon.rb recipe is called. Do this in your own recipe where you set your owner
   # variables. For an example, see ceph-chef/recipes/ceph-mon.rb
   fsid = <%= @fsid_secret %>
-  <% if !node['ceph']['keyring']['global'].empty? %>
+  <% unless node['ceph']['keyring']['global'].empty? %>
   keyring = <%= node['ceph']['keyring']['global'] %>
   <% end -%>
   auth cluster required = cephx
@@ -22,12 +22,14 @@
   # Note: mon host (required) and mon initial members (optional) should be in global section in addition
   # to the cluster and public network options since they are all critical to every node.
   # List of all of the monitor nodes in the given cluster
+  <% if node['ceph']['config']['global']['mon host'].empty? %>
   <% if !@mon_hosts.nil? && !@mon_hosts.empty? -%>
   mon initial members = <%= @mon_hosts.sort.join(', ') %>
   <% end -%>
   <% #Check ALL of the important vars before modifying them just in case their values are empty or nil. -%>
   <% if !@mon_addresses.nil? && !@mon_addresses.empty? -%>
   mon host = <%= @mon_addresses.sort.join(', ') %>
+  <% end -%>
   <% end -%>
   # Suppress warning of too many pgs
   mon pg warn max per osd = 0
