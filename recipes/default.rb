@@ -24,7 +24,14 @@ include_recipe 'ceph-chef::conf'
 
 # Tools needed by cookbook
 node['ceph']['packages'].each do |pck|
-  package pck
+  if pck.include?('=')
+    pck_name, pck_version = pck.split('=')
+    package pck_name do
+      version pck_version
+    end
+  else
+    package pck
+  end
 end
 
 # NOTE: The location of netaddr-1.5.1.gem is defaulted to /tmp. If one exists there then it will install that gem. If not,
