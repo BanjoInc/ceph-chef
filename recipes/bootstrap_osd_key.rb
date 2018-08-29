@@ -18,11 +18,12 @@
 # Create a new bootstrap-osd secret key if it does not exist either on disk as node attribtues
 bash 'create-bootstrap-osd-key' do
   code <<-EOH
-    BOOTSTRAP_KEY=$(ceph --name mon. --keyring /etc/ceph/#{node['ceph']['cluster']}.mon.keyring auth get-or-create-key client.bootstrap-osd mon 'allow profile bootstrap-osd')
+    BOOTSTRAP_KEY=$(ceph --name mon. --keyring /etc/ceph/#{node['ceph']['cluster']}.mon.keyring auth get-or-create-key client.bootstrap-osd mon 'allow profile bootstrap-osd' --cluster #{node['ceph']['cluster']})
     ceph-authtool "/var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring" \
         --create-keyring \
         --name=client.bootstrap-osd \
-        --add-key="$BOOTSTRAP_KEY"
+        --add-key="$BOOTSTRAP_KEY" \
+        --cluster #{node['ceph']['cluster']}
   EOH
   only_if "test -s /etc/ceph/#{node['ceph']['cluster']}.mon.keyring"
   not_if { ceph_chef_bootstrap_osd_secret }
@@ -33,7 +34,7 @@ end
 
 # If the bootstrap-osd secret key exists as a node attribute but not on disk, write it out
 execute 'format bootstrap-osd-secret as keyring' do
-  command lazy { "ceph-authtool '/var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring' --create-keyring --name=client.bootstrap-osd --add-key=#{ceph_chef_bootstrap_osd_secret}" }
+  command lazy { "ceph-authtool '/var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring' --create-keyring --name=client.bootstrap-osd --add-key=#{ceph_chef_bootstrap_osd_secret} --cap mon 'allow profile bootstrap-osd' --cluster #{node['ceph']['cluster']}" }
   only_if { ceph_chef_bootstrap_osd_secret }
   not_if "test -s /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring"
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
@@ -55,10 +56,11 @@ end
 # in a higher level recipe to force a specific value
 ruby_block 'save_bootstrap_osd' do
   block do
-    fetch = Mixlib::ShellOut.new("ceph-authtool '/var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring' --print-key --name=client.bootstrap-osd")
+    fetch = Mixlib::ShellOut.new("ceph-authtool '/var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring' --print-key --name=client.bootstrap-osd --cluster #{node['ceph']['cluster']}")
     fetch.run_command
     key = fetch.stdout
     ceph_chef_save_bootstrap_osd_secret(key.delete!("\n"))
   end
-  action :nothing
+  only_if { ceph_chef_bootstrap_osd_secret }
+  not_if "test -s /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring"
 end

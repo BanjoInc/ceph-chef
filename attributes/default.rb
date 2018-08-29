@@ -76,8 +76,10 @@ end
 
 # Override these in your environment file or here if you wish. Don't put them in the 'ceph''config''global' section.
 # The public and cluster network settings are critical for proper operations.
-default['ceph']['network']['public']['cidr'] = ['10.121.1.0/24']
-default['ceph']['network']['cluster']['cidr'] = ['10.121.2.0/24']
+# public 10.121.1.0/24
+# cluster 10.121.2.0/24
+default['ceph']['network']['public']['cidr'] = []
+default['ceph']['network']['cluster']['cidr'] = []
 
 # Tags are used to identify nodes for searching (unless using environments - see below)
 # IMPORTANT

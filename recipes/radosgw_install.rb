@@ -23,9 +23,9 @@ end
 
 platform_family = node['platform_family']
 
-if node['ceph']['version'] == 'hammer'
-  case platform_family
-  when 'rhel'
+case platform_family
+when 'rhel'
+  if node['ceph']['version'] == 'hammer'
     # Known issue - https://access.redhat.com/solutions/1546303
     # 2015-10-05
     cookbook_file '/etc/init.d/ceph-radosgw' do
@@ -33,6 +33,11 @@ if node['ceph']['version'] == 'hammer'
       owner 'root'
       group 'root'
       mode '0755'
+    end
+  else
+    template '/usr/lib/systemd/system/ceph-radosgw@.service' do
+      notifies :run, 'execute[ceph-systemctl-daemon-reload]', :immediately
+      mode '0644'
     end
   end
 end

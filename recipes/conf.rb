@@ -48,6 +48,7 @@ template "/etc/ceph/#{node['ceph']['cluster']}.conf" do
     {
       :fsid_secret => ceph_chef_fsid_secret,
       :mon_addresses => ceph_chef_mon_addresses,
+      :mon_hosts => ceph_chef_mon_hosts,
       :is_mon => ceph_chef_is_mon_node,
       :is_rgw => ceph_chef_is_radosgw_node,
       :is_rbd => ceph_chef_is_rbd_node,

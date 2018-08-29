@@ -60,7 +60,7 @@ if node['ceph']['pools']['radosgw']['federated_enable']
     new_key = ''
     ruby_block "check-radosgw-secret-#{inst['name']}" do
       block do
-        fetch = Mixlib::ShellOut.new("sudo ceph auth get-key client.radosgw.#{inst['region']}-#{inst['name']} 2>/dev/null")
+        fetch = Mixlib::ShellOut.new("sudo ceph auth get-key client.radosgw.#{inst['region']}-#{inst['name']} --cluster #{node['ceph']['cluster']} 2>/dev/null")
         fetch.run_command
         key = fetch.stdout
         unless key.to_s.strip.empty?
@@ -121,7 +121,7 @@ if node['ceph']['pools']['radosgw']['federated_enable']
     # Saves the key to the current node attribute
     ruby_block "save-radosgw-secret-#{inst['name']}" do
       block do
-        fetch = Mixlib::ShellOut.new("sudo ceph-authtool #{keyring} -n client.radosgw.#{inst['region']}-#{inst['name']}  --print-key")
+        fetch = Mixlib::ShellOut.new("sudo ceph-authtool #{keyring} -n client.radosgw.#{inst['region']}-#{inst['name']}  --print-key --name client.radosgw.#{inst['region']}-#{inst['name']}")
         fetch.run_command
         key = fetch.stdout
         ceph_chef_save_radosgw_inst_secret(key.delete!("\n"), "#{inst['region']}-#{inst['name']}")

@@ -30,10 +30,8 @@ case node['platform_family']
 when 'rhel'
   # NOTE: We will be doing a PR on the main Ceph repo soon that does the systemd config for ceph-rest-api but
   # for now, this will create the required config.
-  cookbook_file '/etc/systemd/system/ceph-rest-api.service' do
-    source 'ceph-rest-api.service'
-    owner 'root'
-    group 'root'
+  template '/etc/systemd/system/ceph-rest-api.service' do
+    notifies :run, 'execute[ceph-systemctl-daemon-reload]', :immediately
     mode '0644'
   end
 end

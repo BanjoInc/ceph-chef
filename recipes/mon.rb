@@ -106,7 +106,7 @@ keyring = "#{node['ceph']['mon']['keyring_path']}/#{node['ceph']['cluster']}.mon
 
 # This will execute on other nodes besides the first mon node.
 execute 'format ceph-mon-secret as keyring' do
-  command lazy { "ceph-authtool --create-keyring #{keyring} --name=mon. --add-key=#{node['ceph']['monitor-secret']} --cap mon 'allow *'" }
+  command lazy { "ceph-authtool --create-keyring #{keyring} --name=mon. --add-key=#{ceph_chef_mon_secret} --cap mon 'allow *'" }
   creates keyring
   user node['ceph']['owner']
   group node['ceph']['group']
@@ -135,10 +135,9 @@ ruby_block 'save ceph_chef_mon_secret' do
     fetch.run_command
     key = fetch.stdout
     node.normal['ceph']['monitor-secret'] = key.delete!("\n")
-    # node.set['ceph']['monitor-secret'] = key.delete!("\n")
-    # node.save
   end
-  action :nothing
+  not_if { ceph_chef_mon_secret }
+  only_if "test -s #{keyring}"
 end
 
 # For now, make all mon nodes admin nodes
@@ -157,7 +156,7 @@ execute 'make sure monitor key is in mon data' do
 end
 
 execute 'ceph-mon mkfs' do
-  command lazy { "ceph-mon --mkfs -i #{node['hostname']} --fsid #{node['ceph']['fsid-secret']} --keyring #{keyring}" }
+  command lazy { "ceph-mon --mkfs -i #{node['hostname']} --fsid #{node['ceph']['fsid-secret']} --keyring #{keyring} --cluster #{node['ceph']['cluster']}" }
   creates "/var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
   user node['ceph']['owner']
   group node['ceph']['group']
@@ -175,7 +174,7 @@ end
 
 if node['ceph']['version'] != 'hammer'
     # Include our overridden systemd file to handle starting the service during bootstrap
-    cookbook_file '/etc/systemd/system/ceph-mon@.service' do
+    template '/etc/systemd/system/ceph-mon@.service' do
       notifies :run, 'execute[ceph-systemctl-daemon-reload]', :immediately
       action :create
       only_if { rhel? && systemd? }

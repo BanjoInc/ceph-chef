@@ -8,7 +8,7 @@
   # This value must be set before the mon.rb recipe is called. Do this in your own recipe where you set your owner
   # variables. For an example, see ceph-chef/recipes/ceph-mon.rb
   fsid = <%= @fsid_secret %>
-  <% if !node['ceph']['keyring']['global'].empty? %>
+  <% unless node['ceph']['keyring']['global'].empty? %>
   keyring = <%= node['ceph']['keyring']['global'] %>
   <% end -%>
   auth cluster required = cephx
@@ -22,9 +22,14 @@
   # Note: mon host (required) and mon initial members (optional) should be in global section in addition
   # to the cluster and public network options since they are all critical to every node.
   # List of all of the monitor nodes in the given cluster
+  <% if node['ceph']['config']['global']['mon host'].empty? %>
+  <% if !@mon_hosts.nil? && !@mon_hosts.empty? -%>
+  mon initial members = <%= @mon_hosts.sort.join(', ') %>
+  <% end -%>
   <% #Check ALL of the important vars before modifying them just in case their values are empty or nil. -%>
   <% if !@mon_addresses.nil? && !@mon_addresses.empty? -%>
   mon host = <%= @mon_addresses.sort.join(', ') %>
+  <% end -%>
   <% end -%>
   # Suppress warning of too many pgs
   mon pg warn max per osd = 0
@@ -60,7 +65,15 @@
   # Set the default values here if no values provided to override them
   # Need xattr use omap = true for RGW
   osd map dedup = true
-  osd max write size = 256
+  <% if node['ceph']['osd']['max']['write']['size'] > 0 %>
+  osd max write size = <%= node['ceph']['osd']['max']['write']['size'] %>
+  <% end %>
+  <% if node['ceph']['osd']['max']['object']['name']['len'] > 0 %>
+  osd max object name len = <%= node['ceph']['osd']['max']['object']['name']['len'] %>
+  <% end %>
+  <% if node['ceph']['osd']['max']['object']['namespace']['len'] > 0 %>
+  osd max object namespace len = <%= node['ceph']['osd']['max']['object']['namespace']['len'] %>
+  <% end %>
   osd disk threads = 1
   osd client message size cap = 1073741824
   filestore xattr use omap = true
@@ -81,11 +94,15 @@
   journal block align = true
   journal dio = true
   journal aio = true
-  osd mkfs type = xfs
+  osd mkfs type = <%= node['ceph']['osd']['mkfs']['type'] %>
+  # Example: osd mount options xfs = noexec,nodev,noatime,nodiratime,barrier=0,discard
   #osd mount options xfs = rw,noexec,nodev,noatime,nodiratime,nobarrier
   osd mount options xfs = rw,noatime,inode64,logbufs=8,logbsize=256k,allocsize=4M
   # Example: osd mkfs options xfs = -f -i size=2048
-  # Example: osd mount options xfs = noexec,nodev,noatime,nodiratime,barrier=0,discard
+  <% if node['ceph']['osd']['mkfs']['options']['xfs'] %>
+  osd mkfs options xfs = <%= node['ceph']['osd']['mkfs']['options']['xfs'] %>
+  <% end %>
+
   # IMPORTANT: If you modify the crush map with the automation then uncomment the line below (osd crush update ...)
   # otherwise the crush map will not get created correctly and the PGs will stay in inactive/unclean state.
   # In a production system it's good to set this value to 'false' and modify the crush map to fit your environment.

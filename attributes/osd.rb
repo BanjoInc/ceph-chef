@@ -31,6 +31,13 @@ default['ceph']['osd']['size']['min'] = 2
 
 # Default to 2G - Changed this to higher number for a production system.
 default['ceph']['osd']['journal']['size'] = 2048
+default['ceph']['osd']['max']['write']['size'] = 256
+default['ceph']['osd']['max']['object']['name']['len'] = 256
+default['ceph']['osd']['max']['object']['namespace']['len'] = 64
+
+# Default filesystem format to xfs
+default['ceph']['osd']['mkfs']['type'] = 'xfs'
+default['ceph']['osd']['mkfs']['options']['xfs'] = nil
 
 # Override this if you modify the crush map in a production system.
 default['ceph']['osd']['crush'] = { 'update_on_start' => true, 'chooseleaf_type' => 1, 'update' => false }
