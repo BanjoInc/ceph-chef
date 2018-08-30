@@ -18,7 +18,14 @@
 include_recipe 'ceph-chef'
 
 node['ceph']['radosgw']['packages'].each do |pck|
-  package pck
+  if pck.include?('=')
+    pck_name, pck_version = pck.split('=')
+    package pck_name do
+      version pck_version
+    end
+  else
+    package pck
+  end
 end
 
 platform_family = node['platform_family']
